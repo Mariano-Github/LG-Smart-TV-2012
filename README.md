@@ -16,6 +16,7 @@ This is based on a similar project that connects Smartthings to Pre 2012 LG Smar
  * -NOTE: Device controller works to Activate and Deactivate TV Power Save: screen ON-OFF and Mute OFF-ON. (TV 42" 12watt.consumption, TV 29" 9watt)
  * -Can turn TV Power Off with power button. When these LG TVs 2012 are power OFF, the network does not work and therefore it is impossible to turn them ON.
  * IMPORTANT: Must be configure in your router the Fix IP for your TV or you must write the TV IP in th device configuration even 12Hours normally
+
 Link to video how work:
 https://youtu.be/BZdkc4471nE
  
