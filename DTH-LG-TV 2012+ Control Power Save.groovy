@@ -173,8 +173,7 @@ def nextCode() {
 
   if (state.counter == 0 ||state.counter == 10) { runIn(1, 'mute1',[overwrite: true]) }
   if (state.counter == 1) { runIn(7, 'save',[overwrite: true]) }
-  if (state.counter == 2) { runIn(1, 'up',[overwrite: true]) }
-  if (state.counter == 3) { runIn(1, 'down',[overwrite: true]) }
+  if (state.counter == 2 || state.counter == 3) { runIn(1, 'up',[overwrite: true]) }
   if (state.counter == 4) { runIn(1, 'ok',[overwrite: true]) }
   if (state.counter == 11) { runIn(2, 'mute1',[overwrite: true]) }
 }
@@ -303,11 +302,10 @@ def up() {
 	log.debug "Executing 'up'" 
     return sendCommand(12)
 }
-// ***** send up code
+
 def down() {
-	//Original return sendCommand(13)
     log.debug "Executing 'down'" 
-    return sendCommand(12)
+    return sendCommand(13)
 }
 
 def left() {
