@@ -120,7 +120,8 @@ def parse(String description) {
         log.debug "vuelvo a parse desde parseHttpResult"
         log.debug "Parse-1: state.backup= $state.backup; state.counter= $state.counter; state.Id= $state.Id"
     }
-  if (state.counter == 11) { 
+  // End play secuence
+  if (state.counter == 12) { 
    sendEvent(name: "switch", value: "on")
    sendEvent(name: "mute", value: "unmuted")
    sendEvent(name: "status", value: "playing")
@@ -128,6 +129,7 @@ def parse(String description) {
    state.currentTrack = 0
    sendEvent(name: "trackDescription", value: state.tracks[state.currentTrack])
   }
+   // End pause secuence
   if (state.counter == 5) {
    sendEvent(name: "switch", value: "on")
    sendEvent(name: "status", value: "paused")
@@ -143,6 +145,7 @@ def parse(String description) {
   }
   log.debug "Parse-2: state.backup= $state.backup; state.counter= $state.counter; state.Id= $state.Id"
   
+  //Refresh status result
   if (state.counter == 15) {
     if (state.StatusTV == "stopped" && state.Id != null) {
        log.debug "Do TV play secuence"
