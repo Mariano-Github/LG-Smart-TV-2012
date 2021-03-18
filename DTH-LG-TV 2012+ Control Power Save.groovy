@@ -12,10 +12,17 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  *  Modified Mar 2021 By Mariano Colmenarejo
- *  Perform Secuence of Remote codes for Enter in Power Save mode: Screen OFF and Mute (clicking Pause)
+ *  Perform Secuence of Remote codes for Enter in Power Save mode: Screen Off and Mute On (clicking Pause)
  *  Perform Secuence for Power save Off and Mute Off (Clicking Play)
+ *  Perform mute or unmute clicking speaker icon
  *  Perfor TV Power Off click Off button. For restart TV ON, click ON on your remote control
  */
+
+public static String version() { return "v1.1.20210316_mute on-off_Mod" }
+/*
+ *   2021/03/16 >>> v1.1 mute & unmute Mod - Mod Perform mute or unmute clicking speaker icon
+ *   2021/03/07 >>> v1.0 On-Off, Play & Pause - Mod for TV On-Off, Pause(power save On) and Play(Power save Off)
+ */   
  
 metadata {
     definition (name: "LG-TV 2012+ Control Power Save", namespace: "smartthings", author: "Samlalor mod by MCC")
@@ -32,6 +39,7 @@ metadata {
     preferences {
         input("televisionIp", "string", title:"Television IP Address", description: "Television's IP address", required: true, displayDuringSetup: false)
         input("pairingKey", "string", title:"Pairing Key", description: "Pairing key", required: true, displayDuringSetup: false)
+        input type: "paragraph", element: "paragraph", title: "Version", description: version(), displayDuringSetup: false
 	}
 
 	tiles(scale: 2) {
@@ -43,7 +51,7 @@ metadata {
 			}
 			tileAttribute("device.status", key: "SECONDARY_CONTROL") {
 				attributeState("paused", label:"Paused", action:"music Player.play", nextState: "playing")
-				attributeState("playing", label:"Play", action:"music Player.pause", nextState: "paused")
+				attributeState("playing", label:"Playing", action:"music Player.pause", nextState: "paused")
 				attributeState("stopped", label:"Stopped", action:"music Player.play", nextState: "playing")
 			}
             tileAttribute("device.status", key: "PREVIOUS_TRACK") {
@@ -73,7 +81,7 @@ def installed() {
  log.debug "Installed"
  
  //variables state:
- //state.counter: Counter for secuence control (0 = pause ini secuence, 10= play ini secuence, 15= refresh ini, -2= end secuence)
+ //state.counter: Counter for secuence control (0 to 5= pause secuence, 10-11= play secuence, 15= refresh, 19= mute or unmute, -2= end secuence)
  //state.Id: save sessionId for control TV response to key pairing sent in sessionIdCommand()
  //state.StatusTV: last TV Status, playing, stopped or paused
  //state.backup: for save state.counter value before refresh execute (state.counter=15)
@@ -129,7 +137,7 @@ def parse(String description) {
    state.currentTrack = 0
    sendEvent(name: "trackDescription", value: state.tracks[state.currentTrack])
   }
-   // End pause secuence
+  // End pause secuence
   if (state.counter == 5) {
    sendEvent(name: "switch", value: "on")
    sendEvent(name: "status", value: "paused")
@@ -138,18 +146,24 @@ def parse(String description) {
    sendEvent(name: "trackDescription", value: state.tracks[state.currentTrack])
   }
   
-  if (state.counter == 5 ||state.counter == 12) {state.counter = -2}
+  if (state.counter == 5 || state.counter == 12 || state.counter == 20) {state.counter = -2}
   if (state.counter < 0) {
    state.Id= "end"
    log.debug "state.StatusTV = $state.StatusTV"
   }
   log.debug "Parse-2: state.backup= $state.backup; state.counter= $state.counter; state.Id= $state.Id"
   
-  //Refresh status result
+  // refresh status result
   if (state.counter == 15) {
     if (state.StatusTV == "stopped" && state.Id != null) {
-       log.debug "Do TV play secuence"
-       state.counter = 10
+      log.debug "Do TV play"
+      sendEvent(name: "mute", value: "unmuted")
+      sendEvent(name: "status", value: "playing")
+      state.StatusTV = "playing"
+      state.backup = -2
+      state.Id= "end"
+      state.currentTrack = 0
+      sendEvent(name: "trackDescription", value: state.tracks[state.currentTrack])       
     }
     if (state.Id == null) {
      log.debug "TV Off Line or Power Off"
@@ -163,8 +177,8 @@ def parse(String description) {
     } else {
       log.debug " TV response state.Id= $state.Id. 'TV Could be Power save or Power On'"
       log.debug "state.StatusTV = $state.StatusTV"
-      sendEvent(name: "switch", value: "on")
-      if (state.counter != 10) {state.counter = state.backup}
+       if (device.currentValue("switch")== "off") {sendEvent(name: "switch", value: "on")}
+      state.counter = state.backup
      }
   }
   nextCode()
@@ -175,7 +189,7 @@ def nextCode() {
   log.debug "En Next----state.counter= $state.counter"
 
   if (state.counter == 0 ||state.counter == 10) { runIn(1, 'mute1',[overwrite: true]) }
-  if (state.counter == 1) { runIn(7, 'save',[overwrite: true]) }
+  if (state.counter == 1) { runIn(6, 'save',[overwrite: true]) }
   if (state.counter == 2 || state.counter == 3) { runIn(1, 'up',[overwrite: true]) }
   if (state.counter == 4) { runIn(1, 'ok',[overwrite: true]) }
   if (state.counter == 11) { runIn(2, 'mute1',[overwrite: true]) }
@@ -216,8 +230,8 @@ def play() {
 
 def pause() {	
     log.debug "Executing 'Power Save: screen Off + Mute On'"
-     state.currentTrack = 3
-   sendEvent(name: "trackDescription", value: state.tracks[state.currentTrack])
+    state.currentTrack = 3
+    sendEvent(name: "trackDescription", value: state.tracks[state.currentTrack])
 
     state.counter = 0
     return refresh()
@@ -250,7 +264,11 @@ def channelDown() {
 def refresh() {
     log.debug "Executing 'refresh' to Detect TV Power Off"
     if (state.counter == 0) {
-     sendEvent(name: "mute", value: "muted")
+     if (device.currentState("mute").value == "muted")  {
+      state.counter = 1
+      } else {
+        sendEvent(name: "mute", value: "muted")
+      }
     }
     //detect TV OFF
     if (state.Id == "") {
@@ -268,17 +286,23 @@ def refresh() {
     log.debug "state.StatusTV = $state.StatusTV"
     return sessionIdCommand()
 }
+
 def unmute () {
   log.debug "unmute"
-  //state.counter = 15
-  //sendEvent(name: "mute", value: "unmuted")
-  //return sendCommand(26)
+    if (state.StatusTV == "playing") {    
+     state.counter = 19
+     sendEvent(name: "mute", value: "unmuted")
+     return sendCommand(26)
+   }
 }
+
 def mute() {
 	log.debug "Executing 'mute'"
-    //state.counter = 15
-    //sendEvent(name: "mute", value: "muted")
-    //return sendCommand(26)
+    if (state.StatusTV == "playing") {    
+     state.counter = 19
+     sendEvent(name: "mute", value: "muted")
+     return sendCommand(26)
+   }
 }
 
 //****** save energy send code
