@@ -14,8 +14,9 @@ This is based on a similar project that connects Smartthings to Pre 2012 LG Smar
  * -Write an App Name to control One TV device. DTH created with same name.
  * -Click on "TV Key" and write the copied code TV pairing key.
  * -NOTE: Device controller works to Activate and Deactivate TV Power Save: screen ON-OFF and Mute OFF-ON. (TV 42" 12watt.consumption, TV 29" 9watt)
- * -Can turn TV Power Off with power button. When these LG TVs 2012 are power OFF, the network does not work and therefore it is impossible to turn them ON.
- * IMPORTANT: Must be configure in your router the Fix IP for your TV or you must write the TV IP in th device configuration even 12Hours normally
+ * -Can turn TV Power Off with power button or remote controller. When these LG TVs 2012 are power OFF, the network does not work and therefore it is impossible to turn them ON.
+ * -Connecting TV to electrical network with smart plug or smart switch you can power On and Off TV. The TV restore the last state On or Off
+ * IMPORTANT: Must be configure in your router the Fix IP for your TV or you must write the TV IP in the device configuration even 12Hours normally
 
 Link to video how work:
 https://youtu.be/BZdkc4471nE
