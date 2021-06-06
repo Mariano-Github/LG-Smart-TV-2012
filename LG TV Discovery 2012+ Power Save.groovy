@@ -230,7 +230,7 @@ private tvRequestPairingKey(){
 	]
 
 	log.debug "HTTP REQUEST"
-    log.debug "${shttpRequest}"
+    log.debug "${httpRequest}"
     
 	def hubAction = new physicalgraph.device.HubAction(httpRequest)
 	sendHubCommand(hubAction)
